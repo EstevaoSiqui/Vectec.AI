@@ -1,0 +1,147 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+     
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+</head>
+
+<body>
+    <main id="app">
+        <nav>
+            <div class="nav-wrapper">
+              <a href="#" class="brand-logo"><img src="logo.png" alt="" style="width: 100px;margin: 10px;"></a>
+            </div>
+          </nav>
+        <div id="chatTela">
+            <div id="chatBox" class="chat">
+                <div class="mensagens" v-show="mensagens.length>0" v-for="(value, index) in mensagens">
+                    <div class="assistent" v-if="mensagens[index].role=='assistant'">{{ mensagens[index]?.content[0]?.text?.value }}</div>
+                    <div class="user" v-if="mensagens[index].role=='user'">{{ mensagens[index]?.content[0]?.text?.value }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="input">
+            <form action="#" v-on:submit="this.sendChat()">
+                <input id="inputBox" placeholder="Digite aqui" :value="mensagem" />
+                <button class="btn-floating waves-effect waves-light" type="submit">
+                    <i class="material-icons">send</i>
+                </button>
+            </form>
+        </div>
+    </main>
+    <script type="module">
+        import OpenAI from 'https://cdn.jsdelivr.net/npm/openai@4.29.1/+esm' 
+        let app = Vue.createApp({
+            data() {
+                return {
+                    message: false,
+                    mensagem: '',
+                    mensagens: [],
+                    loading: false,
+                    threadId: 0,
+                    apiKey: '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',
+                    assistantId: "asst_O86SmWlOTw15CO8xtCaquz28",
+                    openai:false
+                }
+            },
+            methods: {
+                async createTread() {
+                    if (this.threadId==0) {
+                        let thread = await this.openai.beta.threads.create();
+                        console.log('retorno thread:', thread)
+                        this.threadId = thread.id;
+                        await Vue.nextTick();
+                    }
+                    return this.threadId;
+                },
+                async createMensagem(prompt) {
+                    const message = await this.openai.beta.threads.messages.create(this.threadId, {
+                        role: "user",
+                        content: prompt,
+                    });
+                    this.message = message;
+
+                    return message;
+                },
+                async createTreadRun(assistantId){
+                    const run = await this.openai.beta.threads.runs.create(this.threadId, {
+                    assistant_id: 'asst_a0yys6NC3Gb4Dwe0N92TnSEG',
+                    instructions:
+                        "Please address the user as Jane Doe. The user has a premium account.",
+                    });
+                    return run;
+                },
+                async retrieve(){
+                    return await this.openai.beta.threads.runs.retrieve(this.threadId, run.id);
+                },
+                async sendChat() {
+                  /*   try { */
+                        self = this;
+                        self.openai = new OpenAI({
+                            apiKey: self.apiKey,dangerouslyAllowBrowser: true 
+                        });
+
+                        let userMessage = [];
+                        userMessage['content'] = [];
+                        userMessage['content'][0] = {'text':{'value':document.getElementById('inputBox').value}};
+                        userMessage['role'] = 'user';
+                        await self.mensagens.push(userMessage);
+
+                        await self.createTread();
+                        await Vue.nextTick();// Make the API request
+                        if (self.threadId==0) console.log('thread:',self.threadId)
+                        else{
+                            let message = await self.createMensagem(userMessage['content'][0].text.value);
+                            let treadRun = await self.createTreadRun(self.assistantId);
+                            console.log(treadRun)
+
+                            
+                            if(treadRun.status!='completed'){
+                                let asstRun = await self.openai.beta.threads.runs.retrieve(self.threadId, treadRun.id);
+                                while(asstRun.status === "queued" || asstRun.status ===  "in_progress"){
+                                    console.log(`Run status: ${asstRun.status}`);
+                                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+                                    asstRun = await self.openai.beta.threads.runs.retrieve(self.threadId, treadRun.id);
+                                }
+                            }
+
+
+                            const messages = await self.openai.beta.threads.messages.list(self.threadId);
+
+                            //await messages.data.forEach(element => {
+                                await self.mensagens.push(messages.data[0]);
+
+                                
+                            //});
+                            //self.mensagens.push(messages.data);
+
+                            console.log(messages);
+                        }
+                        await Vue.nextTick();
+                    /* } catch (err) {
+                        console.error("Error in chat =====>", err);
+                        return err;
+                    } */
+                }
+                
+            },
+            async mounted() {
+            },
+            updated() { }
+        });
+        app.config.globalProperties.$OpenAI = OpenAI; // Adicione a instância do OpenAI ao Vue
+
+        app.mount('#app');
+    </script>
+</body>
+</html>

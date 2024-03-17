@@ -1,0 +1,93 @@
+body {
+    background-color: rgb(66, 66, 66);
+}
+
+#inputBox {
+    color: whitesmoke;
+    margin: 0;
+} 
+
+#inputBox:focus {
+    color: whitesmoke;
+}
+
+.input {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    padding: 10px;
+    background: #424242;
+}
+
+.input form {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: stretch;
+}
+
+.user {
+    color: rgb(19, 19, 19);
+    background-color: #d0d0d0;
+    padding: 10px;
+    margin: 0px 35px 0px 0px;
+}
+
+.assistent {
+    color: rgb(19, 19, 19);
+    background-color: #d0d0d0;
+    padding: 10px;
+    margin: 0px 0px 0px 35px;
+}
+.nav {
+    color: #fff;
+    background-color: #424242;
+    width: 100%;
+    height: 56px;
+    line-height: 56px;
+    z-index: 999;
+    position: fixed;
+}
+.nav-wrapper {
+    background-color: rgb(66, 66, 66);
+}
+nav .nav-wrapper {
+    position: relative;
+    height: 100%;
+    background: fixed;
+    z-index: 999;
+    background-color: #424242 !important;
+}
+#app{
+    height: -webkit-fill-available;
+}
+#chatTela{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+}
+#chatBox{
+    position: absolute;
+    flex-direction: column;
+    align-content: center;
+    bottom: 0;
+    justify-content: flex-end;
+    padding-bottom: 100px;
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    padding-top: 60px;
+}
+
+#chatBox .mensagens{
+    padding: 10px;
+    margin-bottom: 10px;
+}
+@media only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+    .mensagens{
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+}
